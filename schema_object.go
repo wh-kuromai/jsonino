@@ -3,13 +3,13 @@ package jsonino
 import "encoding/json"
 
 type ObjectScheme struct {
-	TypeName   string                     `json:"type"`
-	Properties map[string]*SchemaNodeBase `json:"properties,omitempty"`
-	Required   []string                   `json:"required,omitempty"`
-	Order      []string                   `json:"order,omitempty"`
+	TypeName   string             `json:"type"`
+	Properties map[string]*Schema `json:"properties,omitempty"`
+	Required   []string           `json:"required,omitempty"`
+	Order      []string           `json:"order,omitempty"`
 }
 
-func ObjectSchemeFactory(data []byte) (SchemaNode, error) {
+func objectSchemeFactory(data []byte) (schemaNode, error) {
 	s := &ObjectScheme{}
 	err := json.Unmarshal(data, s)
 	return s, err
@@ -19,7 +19,7 @@ func (s *ObjectScheme) Type() string {
 	return s.TypeName
 }
 
-func (s *ObjectScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
+func (s *ObjectScheme) parse(pr PathResolver, buf []byte) (*Node, error) {
 	m := make(map[string]json.RawMessage)
 	err := json.Unmarshal(buf, &m)
 	if err != nil {
@@ -44,7 +44,7 @@ func (s *ObjectScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
 	}, nil
 }
 
-func (s *ObjectScheme) ValidateNode(pr PathResolver, n *Node) bool {
+func (s *ObjectScheme) validateNode(pr PathResolver, n *Node) bool {
 	if n.Type != "object" || n.ObjectValue == nil {
 		return false
 	}
@@ -61,11 +61,11 @@ func (s *ObjectScheme) ValidateNode(pr PathResolver, n *Node) bool {
 	return true
 }
 
-func (s *ObjectScheme) Validate(pr PathResolver, buf []byte) bool {
-	n, err := s.Parse(pr, buf)
+func (s *ObjectScheme) Validate(buf []byte) bool {
+	n, err := s.parse(nil, buf)
 	if err != nil {
 		return false
 	}
 
-	return s.ValidateNode(pr, n)
+	return s.validateNode(nil, n)
 }

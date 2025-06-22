@@ -4,58 +4,42 @@ import (
 	"encoding/json"
 )
 
-type Schema interface {
-	Validate(buf []byte) bool
-}
-
-type SchemaBase struct {
-	Root     SchemaNode
-	Resolver PathResolver
-}
-
-func (s *SchemaBase) Validate(buf []byte) bool {
-	return s.Root.Validate(s.Resolver, buf)
-}
-
-func NewSchema(buf []byte) (Schema, error) {
-	scm := &SchemaNodeBase{}
+func NewSchema(buf []byte) (*Schema, error) {
+	scm := &Schema{}
 	err := json.Unmarshal(buf, scm)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SchemaBase{
-		Root: scm.This,
-		Resolver: func(path string) SchemaNode {
-			if path == "#" {
-				return scm.This
-			}
-			return nil
-		},
-	}, nil
+	return scm, nil
 }
 
-type PathResolver func(path string) SchemaNode
+type PathResolver func(path string) Validator
 
-var sSchemeFactory map[string]func(data []byte) (SchemaNode, error)
+var sSchemeFactory map[string]func(data []byte) (schemaNode, error)
 
 func init() {
-	sSchemeFactory = make(map[string]func(data []byte) (SchemaNode, error))
+	sSchemeFactory = make(map[string]func(data []byte) (schemaNode, error))
 
-	sSchemeFactory["string"] = StringSchemeFactory
-	sSchemeFactory["number"] = NumberSchemeFactory
-	sSchemeFactory["array"] = ArraySchemeFactory
-	sSchemeFactory["object"] = ObjectSchemeFactory
+	sSchemeFactory["string"] = stringSchemeFactory
+	sSchemeFactory["number"] = numberSchemeFactory
+	sSchemeFactory["array"] = arraySchemeFactory
+	sSchemeFactory["object"] = objectSchemeFactory
 
 }
 
-func getFactory(typ string) func(data []byte) (SchemaNode, error) {
+func getFactory(typ string) func(data []byte) (schemaNode, error) {
 	return sSchemeFactory[typ]
 }
 
-type SchemaNode interface {
+type Validator interface {
 	Type() string
-	Validate(pr PathResolver, buf []byte) bool
-	ValidateNode(pr PathResolver, node *Node) bool
-	Parse(pr PathResolver, buf []byte) (*Node, error)
+	Validate(buf []byte) bool
+}
+
+type schemaNode interface {
+	Validator
+
+	validateNode(pr PathResolver, node *Node) bool
+	parse(pr PathResolver, buf []byte) (*Node, error)
 }

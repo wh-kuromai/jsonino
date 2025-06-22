@@ -13,7 +13,7 @@ type NumberScheme struct {
 	//Pattern      *string  `json:"pattern,omitempty"`
 }
 
-func NumberSchemeFactory(data []byte) (SchemaNode, error) {
+func numberSchemeFactory(data []byte) (schemaNode, error) {
 	s := &NumberScheme{}
 	err := json.Unmarshal(data, s)
 	return s, err
@@ -23,7 +23,7 @@ func (s *NumberScheme) Type() string {
 	return s.TypeName
 }
 
-func (s *NumberScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
+func (s *NumberScheme) parse(pr PathResolver, buf []byte) (*Node, error) {
 	var num float64
 	err := json.Unmarshal(buf, &num)
 	if err != nil {
@@ -36,7 +36,7 @@ func (s *NumberScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
 	}, nil
 }
 
-func (s *NumberScheme) ValidateNode(pr PathResolver, n *Node) bool {
+func (s *NumberScheme) validateNode(pr PathResolver, n *Node) bool {
 	if n.Type != "number" {
 		return false
 	}
@@ -79,12 +79,12 @@ func (s *NumberScheme) ValidateNode(pr PathResolver, n *Node) bool {
 	return true
 }
 
-func (s *NumberScheme) Validate(pr PathResolver, buf []byte) bool {
+func (s *NumberScheme) Validate(buf []byte) bool {
 
-	n, err := s.Parse(pr, buf)
+	n, err := s.parse(nil, buf)
 	if err != nil {
 		return false
 	}
 
-	return s.ValidateNode(pr, n)
+	return s.validateNode(nil, n)
 }

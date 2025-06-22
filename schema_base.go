@@ -6,36 +6,36 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-type SchemaNodeBase struct {
+type Schema struct {
 	TypeName string     `json:"type"`
-	This     SchemaNode `json:"-"`
+	This     schemaNode `json:"-"`
 }
 
-func (s *SchemaNodeBase) Type() string {
+func (s *Schema) Type() string {
 	return s.This.Type()
 }
 
-func (s *SchemaNodeBase) Parse(pr PathResolver, buf []byte) (*Node, error) {
-	return s.This.Parse(pr, buf)
+func (s *Schema) Parse(pr PathResolver, buf []byte) (*Node, error) {
+	return s.This.parse(pr, buf)
 }
 
-func (s *SchemaNodeBase) ValidateNode(pr PathResolver, node *Node) bool {
-	return s.This.ValidateNode(pr, node)
+func (s *Schema) ValidateNode(pr PathResolver, node *Node) bool {
+	return s.This.validateNode(pr, node)
 }
 
-func (s *SchemaNodeBase) Validate(pr PathResolver, buf []byte) bool {
-	return s.This.Validate(pr, buf)
+func (s *Schema) Validate(buf []byte) bool {
+	return s.This.Validate(buf)
 }
 
-func (s *SchemaNodeBase) MarshalYAML() ([]byte, error) {
+func (s *Schema) MarshalYAML() ([]byte, error) {
 	return yaml.Marshal(s.This)
 }
 
-func (s *SchemaNodeBase) MarshalJSON() ([]byte, error) {
+func (s *Schema) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.This)
 }
 
-func (s *SchemaNodeBase) UnmarshalJSON(data []byte) error {
+func (s *Schema) UnmarshalJSON(data []byte) error {
 	a := &struct {
 		TypeName *string         `json:"type"`
 		OneOf    json.RawMessage `json:"oneOf,omitempty"`

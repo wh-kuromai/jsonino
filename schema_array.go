@@ -3,10 +3,10 @@ package jsonino
 import "encoding/json"
 
 type ArrayScheme struct {
-	TypeName string          `json:"type"`
-	Items    *SchemaNodeBase `json:"items,omitempty"`
-	MaxItems *int            `json:"maxItems,omitempty"`
-	MinItems *int            `json:"minItems,omitempty"`
+	TypeName string  `json:"type"`
+	Items    *Schema `json:"items,omitempty"`
+	MaxItems *int    `json:"maxItems,omitempty"`
+	MinItems *int    `json:"minItems,omitempty"`
 	//UniqueItems *bool      `json:"uniqueItems,omitempty"`
 	//MaxContains *int       `json:"exclusiveMinimum,omitempty"`
 	//MultipleOf  *int       `json:"multipleOf,omitempty"`
@@ -17,13 +17,13 @@ func (s *ArrayScheme) Type() string {
 	return s.TypeName
 }
 
-func ArraySchemeFactory(data []byte) (SchemaNode, error) {
+func arraySchemeFactory(data []byte) (schemaNode, error) {
 	s := &ArrayScheme{}
 	err := json.Unmarshal(data, s)
 	return s, err
 }
 
-func (s *ArrayScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
+func (s *ArrayScheme) parse(pr PathResolver, buf []byte) (*Node, error) {
 	ary := make([]json.RawMessage, 0, 10)
 	err := json.Unmarshal(buf, &ary)
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *ArrayScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
 	}, nil
 }
 
-func (s *ArrayScheme) ValidateNode(pr PathResolver, n *Node) bool {
+func (s *ArrayScheme) validateNode(pr PathResolver, n *Node) bool {
 	if n.Type != "array" || n.ArrayValue == nil {
 		return false
 	}
@@ -78,12 +78,12 @@ func (s *ArrayScheme) ValidateNode(pr PathResolver, n *Node) bool {
 	return true
 }
 
-func (s *ArrayScheme) Validate(pr PathResolver, buf []byte) bool {
+func (s *ArrayScheme) Validate(buf []byte) bool {
 
-	n, err := s.Parse(pr, buf)
+	n, err := s.parse(nil, buf)
 	if err != nil {
 		return false
 	}
 
-	return s.ValidateNode(pr, n)
+	return s.validateNode(nil, n)
 }

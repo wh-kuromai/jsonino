@@ -6,10 +6,10 @@ import (
 )
 
 type OneOfSchema struct {
-	OneOf []*SchemaNodeBase `json:"oneOf,omitempty"`
+	OneOf []*Schema `json:"oneOf,omitempty"`
 }
 
-func OneOfSchemaFactory(data []byte) (SchemaNode, error) {
+func oneOfSchemaFactory(data []byte) (schemaNode, error) {
 	s := &OneOfSchema{}
 	err := json.Unmarshal(data, s)
 	return s, err
@@ -19,9 +19,9 @@ func (s *OneOfSchema) Type() string {
 	return "oneOf"
 }
 
-func (s *OneOfSchema) Parse(pr PathResolver, buf []byte) (*Node, error) {
+func (s *OneOfSchema) parse(pr PathResolver, buf []byte) (*Node, error) {
 	for _, scm := range s.OneOf {
-		if scm.Validate(pr, buf) {
+		if scm.Validate(buf) {
 			return scm.Parse(pr, buf)
 		}
 	}
@@ -29,7 +29,7 @@ func (s *OneOfSchema) Parse(pr PathResolver, buf []byte) (*Node, error) {
 	return nil, errors.New("oneof parse error")
 }
 
-func (s *OneOfSchema) ValidateNode(pr PathResolver, n *Node) bool {
+func (s *OneOfSchema) validateNode(pr PathResolver, n *Node) bool {
 	for _, scm := range s.OneOf {
 		if scm.ValidateNode(pr, n) {
 			return true
@@ -39,14 +39,14 @@ func (s *OneOfSchema) ValidateNode(pr PathResolver, n *Node) bool {
 	return false
 }
 
-func (s *OneOfSchema) Validate(pr PathResolver, buf []byte) bool {
+func (s *OneOfSchema) Validate(buf []byte) bool {
 	for _, scm := range s.OneOf {
-		if scm.Validate(pr, buf) {
-			n, err := scm.Parse(pr, buf)
+		if scm.Validate(buf) {
+			n, err := scm.Parse(nil, buf)
 			if err != nil {
 				return false
 			}
-			return s.ValidateNode(pr, n)
+			return s.validateNode(nil, n)
 		}
 	}
 

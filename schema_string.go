@@ -14,7 +14,7 @@ type StringScheme struct {
 	cpattern  *regexp.Regexp `json:"-"`
 }
 
-func StringSchemeFactory(data []byte) (SchemaNode, error) {
+func stringSchemeFactory(data []byte) (schemaNode, error) {
 	s := &StringScheme{}
 	err := json.Unmarshal(data, s)
 	return s, err
@@ -24,7 +24,7 @@ func (s *StringScheme) Type() string {
 	return s.TypeName
 }
 
-func (s *StringScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
+func (s *StringScheme) parse(pr PathResolver, buf []byte) (*Node, error) {
 	var str string
 	err := json.Unmarshal(buf, &str)
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *StringScheme) Parse(pr PathResolver, buf []byte) (*Node, error) {
 	}, nil
 }
 
-func (s *StringScheme) ValidateNode(pr PathResolver, n *Node) bool {
+func (s *StringScheme) validateNode(pr PathResolver, n *Node) bool {
 	if n.Type != "string" {
 		return false
 	}
@@ -72,12 +72,12 @@ func (s *StringScheme) ValidateNode(pr PathResolver, n *Node) bool {
 	return true
 }
 
-func (s *StringScheme) Validate(pr PathResolver, buf []byte) bool {
+func (s *StringScheme) Validate(buf []byte) bool {
 
-	n, err := s.Parse(pr, buf)
+	n, err := s.parse(nil, buf)
 	if err != nil {
 		return false
 	}
 
-	return s.ValidateNode(pr, n)
+	return s.validateNode(nil, n)
 }

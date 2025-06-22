@@ -6,7 +6,7 @@ import (
 )
 
 // StructToSchema converts a Go struct to an ObjectScheme, handling nested structs recursively.
-func StructToSchema(v interface{}) (SchemaNode, error) {
+func structToSchemaImpl(v interface{}) (schemaNode, error) {
 
 	var typ reflect.Type
 	typ, ok := v.(reflect.Type)
@@ -25,7 +25,7 @@ func StructToSchema(v interface{}) (SchemaNode, error) {
 
 	schema := &ObjectScheme{
 		TypeName:   "object",
-		Properties: map[string]*SchemaNodeBase{},
+		Properties: map[string]*Schema{},
 		Required:   []string{},
 	}
 
@@ -46,12 +46,12 @@ func StructToSchema(v interface{}) (SchemaNode, error) {
 			}
 		}
 
-		schemaNode, err := TypeToSchema(reflect.New(field.Type).Elem().Type())
+		schemaNode, err := typeToSchemaImpl(reflect.New(field.Type).Elem().Type())
 		if err != nil {
 			return nil, err
 		}
 
-		base := &SchemaNodeBase{
+		base := &Schema{
 			TypeName: schemaNode.Type(),
 			This:     schemaNode,
 		}
@@ -66,8 +66,16 @@ func StructToSchema(v interface{}) (SchemaNode, error) {
 	return schema, nil
 }
 
+func SchemaFrom(v any) (*Schema, error) {
+	tts, err := typeToSchemaImpl(v)
+	if err != nil {
+		return nil, err
+	}
+	return &Schema{This: tts}, nil
+}
+
 // TypeToSchema converts a Go value into a SchemaNode.
-func TypeToSchema(v any) (SchemaNode, error) {
+func typeToSchemaImpl(v any) (schemaNode, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -98,19 +106,19 @@ func TypeToSchema(v any) (SchemaNode, error) {
 		return &NumberScheme{TypeName: "number"}, nil
 	case reflect.Slice, reflect.Array:
 		itemType := typ.Elem()
-		itemNode, err := TypeToSchema(reflect.New(itemType).Elem().Interface())
+		itemNode, err := typeToSchemaImpl(reflect.New(itemType).Elem().Interface())
 		if err != nil {
 			return nil, err
 		}
 		return &ArrayScheme{
 			TypeName: "array",
-			Items: &SchemaNodeBase{
+			Items: &Schema{
 				TypeName: itemNode.Type(),
 				This:     itemNode,
 			},
 		}, nil
 	case reflect.Struct:
-		return StructToSchema(v)
+		return structToSchemaImpl(v)
 	default:
 		return nil, errors.New("unsupported type: " + typ.String())
 	}
