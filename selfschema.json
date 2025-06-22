@@ -1,0 +1,68 @@
+{
+	"oneOf" : [
+		{
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string",
+          "value" : "string"
+        },
+        "value" : {
+          "type" : "string",
+          "value" : "string"
+        }
+      }
+    },
+
+		{
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string",
+          "value" : "number"
+        }
+      }
+    },
+
+		{
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string",
+          "value" : "object"
+        }
+      }
+    },
+
+		{
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string",
+          "value" : "array"
+        }
+      }
+    },
+
+		{
+      "type" : "object",
+      "properties" : {
+        "oneOf" : {
+          "type" : "array",
+          "items" : {
+            "refs" : "#"
+          }
+        }
+      }
+    },
+
+		{
+      "type" : "object",
+      "properties" : {
+        "refs" : {
+          "type" : "string"
+        }
+      }
+    }
+  ]
+}
